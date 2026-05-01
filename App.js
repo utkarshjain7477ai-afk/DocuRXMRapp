@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Platform, SafeAreaView, StatusBar, Text, View } from 'react-native';
 import { DemoApp } from './src/demo/DemoApp';
 import { HomeScreen } from './src/screens/HomeScreen';
+import { pingAppOpen } from './src/api/client';
 import { LeadsScreen } from './src/screens/LeadsScreen';
 import { OnboardScreen } from './src/screens/OnboardScreen';
 import { SetupScreen } from './src/screens/SetupScreen';
@@ -22,7 +23,11 @@ export default function App() {
   useEffect(() => {
     SecureStore.getItemAsync(AGENT_KEY).then((raw) => {
       if (raw) {
-        try { setAgent(JSON.parse(raw)); } catch {}
+        try {
+          const parsed = JSON.parse(raw);
+          setAgent(parsed);
+          pingAppOpen(parsed.agentCode);
+        } catch {}
       }
       setAgentChecked(true);
     });
