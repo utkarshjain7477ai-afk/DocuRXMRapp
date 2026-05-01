@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import { Platform, SafeAreaView, StatusBar, Text, View } from 'react-native';
-import { DemoScreen } from './src/screens/DemoScreen';
+import { DemoApp } from './src/demo/DemoApp';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { LeadsScreen } from './src/screens/LeadsScreen';
 import { OnboardScreen } from './src/screens/OnboardScreen';
@@ -82,7 +82,10 @@ export default function App() {
         )}
 
         {agent && screen === 'demo' && (
-          <DemoScreen onBack={() => setScreen('home')} />
+          <DemoApp
+            onBack={() => setScreen('home')}
+            onOnboard={() => { setScreen('onboard'); setOnboardKey((k) => k + 1); }}
+          />
         )}
 
       </View>

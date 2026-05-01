@@ -25,7 +25,13 @@
     },
     "plugins": [
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow DocuRx MR to access the microphone for the live demo."
+        }
+      ]
     ],
     "owner": "utkarsh7477",
     "extra": {
