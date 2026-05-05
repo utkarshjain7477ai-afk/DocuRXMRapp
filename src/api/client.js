@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 
-const BASE = Constants.expoConfig?.extra?.apiUrl ?? 'https://doctortranscription-production.up.railway.app';
+const BASE = Constants.expoConfig?.extra?.apiUrl ?? 'https://prescriva-production.up.railway.app';
 const TIMEOUT = 15000;
 
 async function request(path, options = {}) {

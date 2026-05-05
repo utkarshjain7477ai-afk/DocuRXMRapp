@@ -4,11 +4,10 @@ import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import { Platform, SafeAreaView, StatusBar, Text, View } from 'react-native';
 import { DemoApp } from './src/demo/DemoApp';
-import { HomeScreen } from './src/screens/HomeScreen';
-import { pingAppOpen } from './src/api/client';
 import { LeadsScreen } from './src/screens/LeadsScreen';
 import { OnboardScreen } from './src/screens/OnboardScreen';
 import { SetupScreen } from './src/screens/SetupScreen';
+import { pingAppOpen } from './src/api/client';
 import styles from './src/theme/styles';
 
 const AGENT_KEY = 'mr_agent_profile';
@@ -17,7 +16,7 @@ export default function App() {
   const [fontsLoaded] = useFonts({ Figtree_600SemiBold, Figtree_700Bold });
   const [agent, setAgent] = useState(null);
   const [agentChecked, setAgentChecked] = useState(false);
-  const [screen, setScreen] = useState('home');
+  const [screen, setScreen] = useState('demo');
   const [onboardKey, setOnboardKey] = useState(0);
 
   useEffect(() => {
@@ -36,7 +35,7 @@ export default function App() {
   const handleSetup = async (profile) => {
     await SecureStore.setItemAsync(AGENT_KEY, JSON.stringify(profile));
     setAgent(profile);
-    setScreen('home');
+    setScreen('demo');
   };
 
   if (!fontsLoaded || !agentChecked) return null;
@@ -46,8 +45,8 @@ export default function App() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={[styles.container, Platform.OS === 'android' && { paddingTop: StatusBar.currentHeight || 0 }]}>
 
-        {/* Header — shown on all screens except demo */}
-        {screen !== 'demo' && (
+        {/* Header — shown on all screens except demo (demo has its own inline label) */}
+        {agent && screen !== 'demo' && (
           <View style={styles.header}>
             <Ionicons name="briefcase-outline" size={18} color="#2563EB" style={{ marginRight: 8 }} />
             <Text style={styles.headerBrand}>DocuRx</Text>
@@ -61,11 +60,9 @@ export default function App() {
           <SetupScreen onSetup={handleSetup} />
         )}
 
-        {agent && screen === 'home' && (
-          <HomeScreen
-            agent={agent}
-            onOnboard={() => setScreen('onboard')}
-            onDemo={() => setScreen('demo')}
+        {agent && screen === 'demo' && (
+          <DemoApp
+            onOnboard={() => { setScreen('onboard'); setOnboardKey((k) => k + 1); }}
             onLeads={() => setScreen('leads')}
           />
         )}
@@ -74,7 +71,7 @@ export default function App() {
           <OnboardScreen
             key={onboardKey}
             agent={agent}
-            onBack={() => setScreen('home')}
+            onBack={() => setScreen('demo')}
             onSuccess={() => setOnboardKey((k) => k + 1)}
           />
         )}
@@ -82,14 +79,7 @@ export default function App() {
         {agent && screen === 'leads' && (
           <LeadsScreen
             agent={agent}
-            onBack={() => setScreen('home')}
-          />
-        )}
-
-        {agent && screen === 'demo' && (
-          <DemoApp
-            onBack={() => setScreen('home')}
-            onOnboard={() => { setScreen('onboard'); setOnboardKey((k) => k + 1); }}
+            onBack={() => setScreen('demo')}
           />
         )}
 

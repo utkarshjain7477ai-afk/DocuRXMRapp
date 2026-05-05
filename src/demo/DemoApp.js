@@ -17,18 +17,19 @@ import {
 import { generatePrescription, structureTranscript, uploadAudio } from './api';
 
 const MIN_MS = 1200;
+const MAX_SECONDS = 90;
 
-// ─── States ───────────────────────────────────────────────────────────────────
 const S = { IDLE: 'idle', RECORDING: 'recording', PROCESSING: 'processing', RESULT: 'result', PRESCRIPTION: 'prescription' };
 
-// ─── Timer display ────────────────────────────────────────────────────────────
 function formatTime(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 
-// ─── Idle / Recording screen ──────────────────────────────────────────────────
 function MicScreen({ state, seconds, onPress, onCancel }) {
   const isRecording = state === S.RECORDING;
+  const remaining = MAX_SECONDS - seconds;
+  const progress = Math.min(seconds / MAX_SECONDS, 1);
+
   return (
     <View style={ds.centerStage}>
       <TouchableOpacity
@@ -42,27 +43,36 @@ function MicScreen({ state, seconds, onPress, onCancel }) {
           <Ionicons name={isRecording ? 'stop' : 'mic'} size={40} color={isRecording ? '#EF4444' : '#2563EB'} />
         </View>
       </TouchableOpacity>
+
       <Text style={ds.micLabel}>{isRecording ? 'Recording… tap to stop' : 'Tap to start recording'}</Text>
-      {isRecording && (
+
+      {isRecording ? (
         <>
           <View style={ds.timerRow}>
             <View style={ds.timerDot} />
             <Text style={ds.timerText}>{formatTime(seconds)}</Text>
           </View>
+
+          {/* Progress bar */}
+          <View style={ds.progressTrack}>
+            <View style={[ds.progressFill, { width: `${progress * 100}%`, backgroundColor: remaining <= 15 ? '#EF4444' : '#2563EB' }]} />
+          </View>
+          <Text style={[ds.remainingText, remaining <= 15 && { color: '#EF4444' }]}>
+            {remaining > 0 ? `${formatTime(remaining)} remaining` : 'Auto-stopping…'}
+          </Text>
+
           <TouchableOpacity style={ds.cancelBtn} onPress={onCancel} accessibilityRole="button">
             <Ionicons name="close-circle-outline" size={18} color="#94A3B8" />
             <Text style={ds.cancelBtnText}>Cancel</Text>
           </TouchableOpacity>
         </>
-      )}
-      {!isRecording && (
-        <Text style={ds.micHint}>Speak a short consultation — 30 sec is enough for a demo</Text>
+      ) : (
+        <Text style={ds.micHint}>Speak a short consultation — 30 sec is enough for a demo{'\n'}(max 1:30)</Text>
       )}
     </View>
   );
 }
 
-// ─── Processing screen ────────────────────────────────────────────────────────
 function ProcessingScreen({ step }) {
   return (
     <View style={ds.centerStage}>
@@ -75,7 +85,6 @@ function ProcessingScreen({ step }) {
   );
 }
 
-// ─── Result screen ─────────────────────────────────────────────────────────────
 function ResultScreen({ symptoms, diagnosis, medications, tests, transcript, onGenerate, onRetry, onDiagChange, onMedsChange, onTestsChange }) {
   const [editField, setEditField] = useState(null);
   const [localDiag, setLocalDiag] = useState(diagnosis);
@@ -93,7 +102,6 @@ function ResultScreen({ symptoms, diagnosis, medications, tests, transcript, onG
       <Text style={ds.resultSub}>Review and edit before generating prescription</Text>
 
       <View style={ds.notesCard}>
-        {/* Symptoms */}
         {symptoms.length > 0 && (
           <View style={ds.section}>
             <Text style={ds.sectionLabel}>SYMPTOMS</Text>
@@ -103,7 +111,6 @@ function ResultScreen({ symptoms, diagnosis, medications, tests, transcript, onG
           </View>
         )}
 
-        {/* Diagnosis */}
         <View style={ds.section}>
           <View style={ds.sectionHead}>
             <Text style={ds.sectionLabel}>DIAGNOSIS</Text>
@@ -131,7 +138,6 @@ function ResultScreen({ symptoms, diagnosis, medications, tests, transcript, onG
           )}
         </View>
 
-        {/* Medications */}
         <View style={ds.section}>
           <View style={ds.sectionHead}>
             <Text style={ds.sectionLabel}>MEDICATIONS</Text>
@@ -175,7 +181,6 @@ function ResultScreen({ symptoms, diagnosis, medications, tests, transcript, onG
           ) : <Text style={ds.emptyText}>Not specified</Text>}
         </View>
 
-        {/* Tests */}
         {(localTests.length > 0 || editField === 'tests') && (
           <View style={[ds.section, { borderBottomWidth: 0 }]}>
             <View style={ds.sectionHead}>
@@ -220,7 +225,6 @@ function ResultScreen({ symptoms, diagnosis, medications, tests, transcript, onG
         )}
       </View>
 
-      {/* Transcript toggle */}
       <Pressable style={ds.txCard} onPress={() => setShowTx(!showTx)}>
         <View style={ds.txHeader}>
           <View>
@@ -246,8 +250,7 @@ function ResultScreen({ symptoms, diagnosis, medications, tests, transcript, onG
   );
 }
 
-// ─── Prescription screen ───────────────────────────────────────────────────────
-function PrescriptionScreen({ text, onRetry, onOnboard, onBack }) {
+function PrescriptionScreen({ text, onRetry, onOnboard }) {
   const sections = [];
   const lines = text.split('\n');
   let current = null;
@@ -304,15 +307,11 @@ function PrescriptionScreen({ text, onRetry, onOnboard, onBack }) {
       <TouchableOpacity style={ds.ghostBtn} onPress={onRetry}>
         <Text style={ds.ghostBtnText}>Run Demo Again</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[ds.ghostBtn, { marginTop: 4 }]} onPress={onBack}>
-        <Text style={ds.ghostBtnText}>Back to Home</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 }
 
-// ─── Main DemoApp ─────────────────────────────────────────────────────────────
-export function DemoApp({ onOnboard, onBack }) {
+export function DemoApp({ onOnboard, onLeads }) {
   const [state, setState] = useState(S.IDLE);
   const [step, setStep] = useState('transcribing');
   const [seconds, setSeconds] = useState(0);
@@ -322,12 +321,18 @@ export function DemoApp({ onOnboard, onBack }) {
   const [medications, setMedications] = useState([]);
   const [tests, setTests] = useState([]);
   const [prescription, setPrescription] = useState('');
-  const [error, setError] = useState('');
 
   const recRef = useRef(null);
   const startedAt = useRef(0);
   const timerRef = useRef(null);
   const inFlight = useRef(false);
+
+  // Auto-stop at 90 seconds
+  useEffect(() => {
+    if (state === S.RECORDING && seconds >= MAX_SECONDS) {
+      stopAndProcess();
+    }
+  }, [seconds, state]);
 
   useEffect(() => () => {
     clearInterval(timerRef.current);
@@ -345,7 +350,6 @@ export function DemoApp({ onOnboard, onBack }) {
     setMedications([]);
     setTests([]);
     setPrescription('');
-    setError('');
   };
 
   const handleMicPress = async () => {
@@ -409,7 +413,6 @@ export function DemoApp({ onOnboard, onBack }) {
       setState(S.RESULT);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (e) {
-      setError(e.message || 'Something went wrong.');
       setState(S.IDLE);
       Alert.alert('Error', e.message || 'Transcription failed. Check your connection and try again.');
     } finally {
@@ -447,41 +450,33 @@ export function DemoApp({ onOnboard, onBack }) {
     }
   };
 
-  if (state === S.IDLE || state === S.RECORDING) {
-    return (
-      <View style={{ flex: 1 }}>
-        <TouchableOpacity style={ds.backRow} onPress={onBack} accessibilityRole="button">
-          <Ionicons name="arrow-back" size={18} color="#2563EB" />
-          <Text style={ds.backRowText}>Home</Text>
-        </TouchableOpacity>
-        <View style={ds.demoLabel}>
-          <Ionicons name="play-circle-outline" size={14} color="#2563EB" />
-          <Text style={ds.demoLabelText}>LIVE DEMO — Real AI transcription</Text>
+  const showLeadsBtn = state === S.IDLE || state === S.RECORDING;
+
+  return (
+    <View style={{ flex: 1 }}>
+      {/* Demo label strip — hidden on prescription screen */}
+      {state !== S.PRESCRIPTION && (
+        <View style={ds.demoBar}>
+          <View style={ds.demoLabel}>
+            <Ionicons name="play-circle-outline" size={13} color="#2563EB" />
+            <Text style={ds.demoLabelText}>LIVE DEMO</Text>
+          </View>
+          {showLeadsBtn && (
+            <TouchableOpacity onPress={onLeads} style={ds.leadsBtn} accessibilityRole="button" accessibilityLabel="My Leads">
+              <Ionicons name="list-outline" size={16} color="#64748B" />
+              <Text style={ds.leadsBtnText}>My Leads</Text>
+            </TouchableOpacity>
+          )}
         </View>
+      )}
+
+      {(state === S.IDLE || state === S.RECORDING) && (
         <MicScreen state={state} seconds={seconds} onPress={handleMicPress} onCancel={handleCancel} />
-      </View>
-    );
-  }
+      )}
 
-  if (state === S.PROCESSING) {
-    return (
-      <View style={{ flex: 1 }}>
-        <View style={ds.demoLabel}>
-          <Ionicons name="play-circle-outline" size={14} color="#2563EB" />
-          <Text style={ds.demoLabelText}>LIVE DEMO — Real AI transcription</Text>
-        </View>
-        <ProcessingScreen step={step} />
-      </View>
-    );
-  }
+      {state === S.PROCESSING && <ProcessingScreen step={step} />}
 
-  if (state === S.RESULT) {
-    return (
-      <View style={{ flex: 1 }}>
-        <View style={ds.demoLabel}>
-          <Ionicons name="play-circle-outline" size={14} color="#2563EB" />
-          <Text style={ds.demoLabelText}>LIVE DEMO — Real AI transcription</Text>
-        </View>
+      {state === S.RESULT && (
         <ResultScreen
           symptoms={symptoms}
           diagnosis={diagnosis}
@@ -494,35 +489,26 @@ export function DemoApp({ onOnboard, onBack }) {
           onMedsChange={setMedications}
           onTestsChange={setTests}
         />
-      </View>
-    );
-  }
+      )}
 
-  if (state === S.PRESCRIPTION) {
-    return (
-      <View style={{ flex: 1 }}>
+      {state === S.PRESCRIPTION && (
         <PrescriptionScreen
           text={prescription}
           onRetry={reset}
           onOnboard={onOnboard}
-          onBack={onBack}
         />
-      </View>
-    );
-  }
-
-  return null;
+      )}
+    </View>
+  );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const ds = StyleSheet.create({
-  // Back nav
-  backRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, gap: 6 },
-  backRowText: { fontSize: 14, fontFamily: 'Figtree_700Bold', color: '#2563EB' },
-
-  // Demo badge
-  demoLabel: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingBottom: 8 },
+  // Demo bar (top strip)
+  demoBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 8 },
+  demoLabel: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   demoLabelText: { fontSize: 11, fontFamily: 'Figtree_700Bold', color: '#2563EB', letterSpacing: 0.5 },
+  leadsBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4, paddingHorizontal: 8, borderRadius: 8, backgroundColor: '#F1F5F9' },
+  leadsBtnText: { fontSize: 12, fontFamily: 'Figtree_700Bold', color: '#64748B' },
 
   // Mic screen
   centerStage: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
@@ -542,6 +528,12 @@ const ds = StyleSheet.create({
   timerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14, gap: 6 },
   timerDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444' },
   timerText: { fontSize: 20, fontFamily: 'Figtree_700Bold', color: '#EF4444' },
+
+  // Progress bar
+  progressTrack: { width: 200, height: 4, borderRadius: 2, backgroundColor: '#E2E8F0', marginTop: 14, overflow: 'hidden' },
+  progressFill: { height: 4, borderRadius: 2 },
+  remainingText: { fontSize: 12, fontFamily: 'Figtree_600SemiBold', color: '#94A3B8', marginTop: 6 },
+
   cancelBtn: { flexDirection: 'row', alignItems: 'center', marginTop: 20, gap: 5, padding: 10 },
   cancelBtnText: { fontSize: 14, fontFamily: 'Figtree_600SemiBold', color: '#94A3B8' },
 
