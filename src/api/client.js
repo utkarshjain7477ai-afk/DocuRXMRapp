@@ -18,11 +18,11 @@ async function request(path, options = {}) {
   }
 }
 
-export async function verifyAgent(agentCode) {
-  return request('/mr/verify-agent', {
+export async function selfRegister(name, phone) {
+  return request('/mr/self-register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ agent_code: agentCode }),
+    body: JSON.stringify({ name, phone }),
   });
 }
 
