@@ -108,6 +108,7 @@ export function SetupScreen({ onSetup }) {
           </TouchableOpacity>
         </View>
 
+        <Text style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', marginTop: 16, fontFamily: 'Figtree_600SemiBold' }}>DocuRx MR v1.2</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -1,0 +1,13 @@
+# Reduce upload size
+docs/
+*.png
+*.jpg
+*.jpeg
+*.html
+*.md
+*.txt
+*.pdf
+.git/
+.claude/
+node_modules/
+dist/

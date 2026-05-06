@@ -2,8 +2,8 @@
   "expo": {
     "name": "DocuRx MR",
     "slug": "docurx-mr",
-    "version": "1.0.0",
-    "runtimeVersion": "1.0.0",
+    "version": "2.0.0",
+    "runtimeVersion": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -24,6 +24,8 @@
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
@@ -43,6 +45,9 @@
         "projectId": "15f2131e-7a8d-405e-a4fa-7333e219e9df"
       },
       "apiUrl": "https://prescriva-production.up.railway.app"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/15f2131e-7a8d-405e-a4fa-7333e219e9df"
     }
   }
 }
