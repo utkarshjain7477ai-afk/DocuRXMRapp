@@ -1,7 +1,7 @@
 import * as FileSystem from 'expo-file-system/legacy';
 
 const BASE = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://prescriva-production.up.railway.app';
-const API_KEY = process.env.EXPO_PUBLIC_API_KEY || '';
+const API_KEY = process.env.EXPO_PUBLIC_API_KEY || 'kejnciuiejner34lnf';
 
 const headers = (extra = {}) => ({ 'X-API-Key': API_KEY, ...extra });
 

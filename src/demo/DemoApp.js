@@ -523,11 +523,11 @@ const ds = StyleSheet.create({
     backgroundColor: '#DBEAFE', alignItems: 'center', justifyContent: 'center',
   },
   micInnerActive: { backgroundColor: '#FEE2E2' },
-  micLabel: { fontSize: 17, fontFamily: 'Figtree_700Bold', color: '#0F172A', marginTop: 28, textAlign: 'center' },
-  micHint: { fontSize: 13, fontFamily: 'Figtree_600SemiBold', color: '#94A3B8', marginTop: 10, textAlign: 'center', lineHeight: 18 },
+  micLabel: { fontSize: 19, fontFamily: 'Figtree_700Bold', color: '#0F172A', marginTop: 28, textAlign: 'center' },
+  micHint: { fontSize: 14, fontFamily: 'Figtree_600SemiBold', color: '#94A3B8', marginTop: 10, textAlign: 'center', lineHeight: 20 },
   timerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14, gap: 6 },
   timerDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444' },
-  timerText: { fontSize: 20, fontFamily: 'Figtree_700Bold', color: '#EF4444' },
+  timerText: { fontSize: 22, fontFamily: 'Figtree_700Bold', color: '#EF4444' },
 
   // Progress bar
   progressTrack: { width: 200, height: 4, borderRadius: 2, backgroundColor: '#E2E8F0', marginTop: 14, overflow: 'hidden' },
@@ -543,13 +543,13 @@ const ds = StyleSheet.create({
     backgroundColor: '#EFF6FF', borderWidth: 2, borderColor: '#BFDBFE',
     alignItems: 'center', justifyContent: 'center',
   },
-  loaderLabel: { fontSize: 18, fontFamily: 'Figtree_700Bold', color: '#0F172A', marginTop: 24 },
-  loaderHint: { fontSize: 13, fontFamily: 'Figtree_600SemiBold', color: '#64748B', marginTop: 6 },
+  loaderLabel: { fontSize: 20, fontFamily: 'Figtree_700Bold', color: '#0F172A', marginTop: 24 },
+  loaderHint: { fontSize: 14, fontFamily: 'Figtree_600SemiBold', color: '#64748B', marginTop: 6 },
 
   // Result
   resultScroll: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 32, paddingTop: 4 },
-  resultTitle: { fontSize: 20, fontFamily: 'Figtree_700Bold', color: '#0F172A', marginBottom: 2 },
-  resultSub: { fontSize: 13, fontFamily: 'Figtree_600SemiBold', color: '#64748B', marginBottom: 16 },
+  resultTitle: { fontSize: 22, fontFamily: 'Figtree_700Bold', color: '#0F172A', marginBottom: 2 },
+  resultSub: { fontSize: 14, fontFamily: 'Figtree_600SemiBold', color: '#64748B', marginBottom: 16 },
   notesCard: {
     backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0',
     marginBottom: 12, overflow: 'hidden',
