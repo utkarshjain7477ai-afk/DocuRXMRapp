@@ -3,6 +3,8 @@ import * as Haptics from 'expo-haptics';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  Linking,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { onboardDoctor } from '../api/client';
+import { onboardDoctor, confirmSubscription } from '../api/client';
 import styles from '../theme/styles';
 
 const SPECIALTIES = [
@@ -41,6 +43,11 @@ export function OnboardScreen({ agent, onBack, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [mode, setMode] = useState('form'); // 'form' | 'success' | 'onboardNow'
+  const [confirmCode, setConfirmCode] = useState('');
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [confirmDone, setConfirmDone] = useState(false);
 
   const valid = doctorName.trim().length >= 2 && clinicName.trim().length >= 2;
 
@@ -49,7 +56,7 @@ export function OnboardScreen({ agent, onBack, onSuccess }) {
     setError('');
     setLoading(true);
     try {
-      await onboardDoctor({
+      const data = await onboardDoctor({
         agent_code: agent.agentCode,
         doctor_name: doctorName.trim(),
         clinic_name: clinicName.trim(),
@@ -60,7 +67,8 @@ export function OnboardScreen({ agent, onBack, onSuccess }) {
         notes: notes.trim(),
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setSuccess(true);
+      setReferralCode(data.referral_code || '');
+      setMode('success');
     } catch (e) {
       setError(e.message || 'Failed to submit. Please try again.');
     } finally {
@@ -68,20 +76,146 @@ export function OnboardScreen({ agent, onBack, onSuccess }) {
     }
   };
 
-  if (success) {
+  const handleConfirmSubscription = async () => {
+    if (confirmCode.trim().length < 4) { Alert.alert('Enter the confirmation code the doctor gives you'); return; }
+    setConfirmLoading(true);
+    try {
+      await confirmSubscription(referralCode);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setConfirmDone(true);
+    } catch (e) {
+      Alert.alert('Error', e.message || 'Could not confirm. Try again.');
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const shareOnboardInstructions = () => {
+    const msg = `Hi Dr. ${doctorName.trim()}!\n\nI've registered you on DocuRx — AI-powered prescription system.\n\n*Your activation code: ${referralCode}*\n\n📱 Download the app:\nhttps://expo.dev/accounts/utkarsh7477/projects/prescriva/builds\n\nOnce you download and subscribe, enter this code to activate. I'll be in touch!`;
+    Linking.openURL('whatsapp://send?text=' + encodeURIComponent(msg)).catch(() =>
+      Alert.alert('WhatsApp not found', 'Share the code manually with the doctor.')
+    );
+  };
+
+  if (mode === 'onboardNow') {
+    if (confirmDone) {
+      return (
+        <View style={styles.successOverlay}>
+          <View style={styles.successIcon}>
+            <Ionicons name="checkmark-circle" size={44} color="#22C55E" />
+          </View>
+          <Text style={styles.successTitle}>Subscription Confirmed!</Text>
+          <Text style={styles.successSub}>Dr. {doctorName.trim()} is now an active DocuRx user. Commission attributed to you.</Text>
+          <TouchableOpacity style={[styles.primaryBtn, { width: '100%', marginTop: 28 }]} onPress={onSuccess}>
+            <Text style={styles.primaryBtnText}>Onboard Another Doctor</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.secondaryBtn, { width: '100%', marginTop: 12 }]} onPress={onBack}>
+            <Text style={styles.secondaryBtnText}>Back to Home</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return (
+      <ScrollView contentContainerStyle={[styles.onboardScroll, { paddingTop: 20 }]} keyboardShouldPersistTaps="handled">
+        <TouchableOpacity style={styles.backBtn} onPress={() => setMode('success')} accessibilityRole="button">
+          <Ionicons name="arrow-back" size={18} color="#2563EB" />
+          <Text style={styles.backBtnText}>Back</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.screenTitle}>Onboard Dr. {doctorName.trim()}</Text>
+        <Text style={styles.screenSub}>Follow these steps to complete subscription</Text>
+
+        {/* Referral Code */}
+        <View style={{ backgroundColor: '#EFF6FF', borderRadius: 20, padding: 20, marginBottom: 16, alignItems: 'center', borderWidth: 2, borderColor: '#BFDBFE' }}>
+          <Text style={{ fontSize: 11, fontFamily: 'Figtree_700Bold', color: '#64748B', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>Doctor's Activation Code</Text>
+          <Text style={{ fontSize: 38, fontFamily: 'Figtree_700Bold', color: '#1D4ED8', letterSpacing: 8 }}>{referralCode}</Text>
+          <Text style={{ fontSize: 12, color: '#64748B', marginTop: 6, textAlign: 'center' }}>Give this code to Dr. {doctorName.trim()}</Text>
+        </View>
+
+        {/* Steps */}
+        <View style={styles.formCard}>
+          <Text style={styles.formSectionHead}>How it works</Text>
+          {[
+            { n: '1', t: 'Share code with doctor', s: `Tell Dr. ${doctorName.trim()} their code is ${referralCode}` },
+            { n: '2', t: 'Doctor downloads DocuRx', s: 'They search "DocuRx" on Play Store or you send them the link below' },
+            { n: '3', t: 'Doctor subscribes in app', s: 'They enter the code and complete payment (₹2,500/mo)' },
+            { n: '4', t: 'Get confirmation code', s: 'Doctor gets a 4-digit code after paying — enter it below' },
+          ].map((step) => (
+            <View key={step.n} style={{ flexDirection: 'row', gap: 14, marginBottom: 16 }}>
+              <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                <Text style={{ color: '#fff', fontFamily: 'Figtree_700Bold', fontSize: 13 }}>{step.n}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 15, fontFamily: 'Figtree_700Bold', color: '#0F172A', marginBottom: 2 }}>{step.t}</Text>
+                <Text style={{ fontSize: 13, fontFamily: 'Figtree_600SemiBold', color: '#64748B', lineHeight: 18 }}>{step.s}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* WhatsApp share */}
+        <TouchableOpacity
+          style={[styles.primaryBtn, { backgroundColor: '#16A34A', marginBottom: 12 }]}
+          onPress={shareOnboardInstructions}
+          accessibilityRole="button"
+        >
+          <Ionicons name="logo-whatsapp" size={18} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.primaryBtnText}>Send Instructions via WhatsApp</Text>
+        </TouchableOpacity>
+
+        {/* Confirmation code entry */}
+        <View style={styles.formCard}>
+          <Text style={styles.formSectionHead}>Confirm Subscription</Text>
+          <Text style={{ fontSize: 13, color: '#64748B', marginBottom: 12, fontFamily: 'Figtree_600SemiBold' }}>Once the doctor pays, they'll get a code. Enter it here to mark them as active.</Text>
+          <TextInput
+            style={[styles.input, focused === 'confirmCode' && styles.inputFocused, { letterSpacing: 4, fontSize: 20, fontFamily: 'Figtree_700Bold', textAlign: 'center' }]}
+            value={confirmCode}
+            onChangeText={(t) => setConfirmCode(t.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 8))}
+            placeholder="CODE"
+            placeholderTextColor="#CBD5E1"
+            autoCapitalize="characters"
+            onFocus={() => setFocused('confirmCode')}
+            onBlur={() => setFocused('')}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.primaryBtn, (confirmLoading || confirmCode.trim().length < 4) && styles.primaryBtnDisabled]}
+          onPress={handleConfirmSubscription}
+          disabled={confirmLoading || confirmCode.trim().length < 4}
+          accessibilityRole="button"
+        >
+          {confirmLoading
+            ? <ActivityIndicator color="#FFFFFF" />
+            : <Text style={styles.primaryBtnText}>Confirm Subscription</Text>
+          }
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  }
+
+  if (mode === 'success') {
     return (
       <View style={styles.successOverlay}>
         <View style={styles.successIcon}>
           <Ionicons name="checkmark-circle" size={44} color="#22C55E" />
         </View>
-        <Text style={styles.successTitle}>Doctor Onboarded!</Text>
+        <Text style={styles.successTitle}>Lead Saved!</Text>
         <Text style={styles.successSub}>
-          Dr. {doctorName} has been logged under your agent code {agent.agentCode}.
+          Dr. {doctorName.trim()} registered under your code {agent.agentCode}.
         </Text>
-        <TouchableOpacity style={[styles.primaryBtn, { width: '100%', marginTop: 28 }]} onPress={onSuccess}>
-          <Text style={styles.primaryBtnText}>Onboard Another</Text>
+        <TouchableOpacity
+          style={[styles.primaryBtn, { width: '100%', marginTop: 28 }]}
+          onPress={() => setMode('onboardNow')}
+          accessibilityRole="button"
+        >
+          <Text style={styles.primaryBtnText}>Onboard Now →</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.secondaryBtn, { width: '100%', marginTop: 12 }]} onPress={onBack}>
+        <Text style={{ textAlign: 'center', fontSize: 12, color: '#94A3B8', marginTop: 8, fontFamily: 'Figtree_600SemiBold' }}>Doctor subscribes in app, you confirm with their code</Text>
+        <TouchableOpacity style={[styles.secondaryBtn, { width: '100%', marginTop: 14 }]} onPress={onSuccess}>
+          <Text style={styles.secondaryBtnText}>Save & Onboard Another</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.secondaryBtn, { width: '100%', marginTop: 10 }]} onPress={onBack}>
           <Text style={styles.secondaryBtnText}>Back to Home</Text>
         </TouchableOpacity>
       </View>

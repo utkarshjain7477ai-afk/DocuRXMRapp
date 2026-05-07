@@ -38,6 +38,14 @@ export async function fetchMyLeads(agentCode) {
   return request(`/mr/my-leads?agent_code=${encodeURIComponent(agentCode)}`);
 }
 
+export async function confirmSubscription(referralCode) {
+  return request('/mr/confirm-subscription', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ referral_code: referralCode }),
+  });
+}
+
 export function pingAppOpen(agentCode) {
   // Fire-and-forget — don't await, don't surface errors to user
   request('/mr/app-open', {
