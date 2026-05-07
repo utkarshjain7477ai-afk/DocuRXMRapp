@@ -1,6 +1,5 @@
 # Reduce upload size
 docs/
-*.png
 *.jpg
 *.jpeg
 *.html
