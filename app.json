@@ -31,6 +31,7 @@
     },
     "plugins": [
       "expo-font",
+      "expo-updates",
       "expo-secure-store",
       [
         "expo-av",
@@ -47,7 +48,10 @@
       "apiUrl": "https://prescriva-production.up.railway.app"
     },
     "updates": {
-      "url": "https://u.expo.dev/15f2131e-7a8d-405e-a4fa-7333e219e9df"
+      "url": "https://u.expo.dev/15f2131e-7a8d-405e-a4fa-7333e219e9df",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     }
   }
 }
