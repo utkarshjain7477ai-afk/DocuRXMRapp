@@ -80,7 +80,7 @@ export function OnboardScreen({ agent, onBack, onSuccess }) {
     if (confirmCode.trim().length < 4) { Alert.alert('Enter the confirmation code the doctor gives you'); return; }
     setConfirmLoading(true);
     try {
-      await confirmSubscription(referralCode);
+      await confirmSubscription(confirmCode.trim().toUpperCase());
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setConfirmDone(true);
     } catch (e) {

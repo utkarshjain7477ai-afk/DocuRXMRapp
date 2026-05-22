@@ -1,9 +1,12 @@
 import * as FileSystem from 'expo-file-system/legacy';
 
 const BASE = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://prescriva-production.up.railway.app';
-const API_KEY = process.env.EXPO_PUBLIC_API_KEY || 'kejnciuiejner34lnf';
+const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
+if (!API_KEY) {
+  console.warn('[docurx-mr] EXPO_PUBLIC_API_KEY is not set — /transcribe-audio and /structure will 401.');
+}
 
-const headers = (extra = {}) => ({ 'X-API-Key': API_KEY, ...extra });
+const headers = (extra = {}) => ({ ...(API_KEY ? { 'X-API-Key': API_KEY } : {}), ...extra });
 
 const TIMEOUT_TEXT = 60000;
 const TIMEOUT_AUDIO = 120000;

@@ -1,13 +1,37 @@
 import Constants from 'expo-constants';
+import * as SecureStore from 'expo-secure-store';
 
 const BASE = Constants.expoConfig?.extra?.apiUrl ?? 'https://prescriva-production.up.railway.app';
 const TIMEOUT = 15000;
+const TOKEN_KEY = 'mr_session_token';
 
-async function request(path, options = {}) {
+export async function saveToken(token) {
+  if (token) await SecureStore.setItemAsync(TOKEN_KEY, token);
+}
+
+export async function clearToken() {
+  await SecureStore.deleteItemAsync(TOKEN_KEY);
+}
+
+async function authHeaders(extra = {}) {
+  const token = await SecureStore.getItemAsync(TOKEN_KEY);
+  const h = { ...extra };
+  if (token) h['Authorization'] = 'Bearer ' + token;
+  return h;
+}
+
+async function request(path, { method = 'GET', body, auth = true } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT);
+  const headers = auth ? await authHeaders() : {};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
   try {
-    const res = await fetch(`${BASE}${path}`, { ...options, signal: controller.signal });
+    const res = await fetch(`${BASE}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       throw new Error(text || `HTTP ${res.status}`);
@@ -19,19 +43,17 @@ async function request(path, options = {}) {
 }
 
 export async function selfRegister(name, phone) {
-  return request('/mr/self-register', {
+  const data = await request('/mr/self-register', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, phone }),
+    body: { name, phone },
+    auth: false,
   });
+  if (data?.token) await saveToken(data.token);
+  return data;
 }
 
 export async function onboardDoctor(payload) {
-  return request('/mr/onboard-doctor', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  return request('/mr/onboard-doctor', { method: 'POST', body: payload });
 }
 
 export async function fetchMyLeads(agentCode) {
@@ -41,16 +63,10 @@ export async function fetchMyLeads(agentCode) {
 export async function confirmSubscription(referralCode) {
   return request('/mr/confirm-subscription', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ referral_code: referralCode }),
+    body: { referral_code: referralCode },
   });
 }
 
 export function pingAppOpen(agentCode) {
-  // Fire-and-forget — don't await, don't surface errors to user
-  request('/mr/app-open', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ agent_code: agentCode }),
-  }).catch(() => {});
+  request('/mr/app-open', { method: 'POST', body: { agent_code: agentCode } }).catch(() => {});
 }

@@ -7,7 +7,7 @@ import { DemoApp } from './src/demo/DemoApp';
 import { LeadsScreen } from './src/screens/LeadsScreen';
 import { OnboardScreen } from './src/screens/OnboardScreen';
 import { SetupScreen } from './src/screens/SetupScreen';
-import { pingAppOpen } from './src/api/client';
+import { pingAppOpen, selfRegister } from './src/api/client';
 import styles from './src/theme/styles';
 
 const AGENT_KEY = 'mr_agent_profile';
@@ -20,16 +20,22 @@ export default function App() {
   const [onboardKey, setOnboardKey] = useState(0);
 
   useEffect(() => {
-    SecureStore.getItemAsync(AGENT_KEY).then((raw) => {
+    (async () => {
+      const raw = await SecureStore.getItemAsync(AGENT_KEY);
       if (raw) {
         try {
           const parsed = JSON.parse(raw);
+          const token = await SecureStore.getItemAsync('mr_session_token');
+          if (!token && parsed.name && parsed.phone) {
+            // Profile from an older build with no Bearer token — re-register silently.
+            try { await selfRegister(parsed.name, parsed.phone); } catch {}
+          }
           setAgent(parsed);
           pingAppOpen(parsed.agentCode);
         } catch {}
       }
       setAgentChecked(true);
-    });
+    })();
   }, []);
 
   const handleSetup = async (profile) => {
