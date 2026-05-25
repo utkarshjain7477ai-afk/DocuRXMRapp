@@ -190,6 +190,15 @@ export function OnboardScreen({ agent, onBack, onSuccess }) {
             : <Text style={styles.primaryBtnText}>Confirm Subscription</Text>
           }
         </TouchableOpacity>
+        {confirmLoading && (
+          <TouchableOpacity
+            style={[styles.secondaryBtn, { width: '100%', marginTop: 10 }]}
+            onPress={() => setConfirmLoading(false)}
+            accessibilityRole="button"
+          >
+            <Text style={styles.secondaryBtnText}>Cancel</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     );
   }
