@@ -55,7 +55,7 @@ export default function App() {
         {agent && screen !== 'demo' && (
           <View style={styles.header}>
             <Ionicons name="briefcase-outline" size={18} color="#2563EB" style={{ marginRight: 8 }} />
-            <Text style={styles.headerBrand}>DocuRx</Text>
+            <Text style={styles.headerBrand}>Kavox</Text>
             <View style={styles.headerBadge}>
               <Text style={styles.headerBadgeText}>MR</Text>
             </View>

@@ -91,7 +91,7 @@ export function OnboardScreen({ agent, onBack, onSuccess }) {
   };
 
   const shareOnboardInstructions = () => {
-    const msg = `Hi Dr. ${doctorName.trim()}!\n\nI've registered you on DocuRx — AI-powered prescription system.\n\n*Your activation code: ${referralCode}*\n\n📱 Download the app:\nhttps://expo.dev/accounts/utkarsh7477/projects/prescriva/builds\n\nOnce you download and subscribe, enter this code to activate. I'll be in touch!`;
+    const msg = `Hi Dr. ${doctorName.trim()}!\n\nI've registered you on Kavox Rx — AI-powered prescription system.\n\n*Your activation code: ${referralCode}*\n\n📱 Download the app:\nhttps://expo.dev/accounts/utkarsh7477/projects/prescriva/builds\n\nOnce you download and subscribe, enter this code to activate. I'll be in touch!`;
     Linking.openURL('whatsapp://send?text=' + encodeURIComponent(msg)).catch(() =>
       Alert.alert('WhatsApp not found', 'Share the code manually with the doctor.')
     );
@@ -105,7 +105,7 @@ export function OnboardScreen({ agent, onBack, onSuccess }) {
             <Ionicons name="checkmark-circle" size={44} color="#22C55E" />
           </View>
           <Text style={styles.successTitle}>Subscription Confirmed!</Text>
-          <Text style={styles.successSub}>Dr. {doctorName.trim()} is now an active DocuRx user. Commission attributed to you.</Text>
+          <Text style={styles.successSub}>Dr. {doctorName.trim()} is now an active Kavox Rx user. Commission attributed to you.</Text>
           <TouchableOpacity style={[styles.primaryBtn, { width: '100%', marginTop: 28 }]} onPress={onSuccess}>
             <Text style={styles.primaryBtnText}>Onboard Another Doctor</Text>
           </TouchableOpacity>
@@ -137,7 +137,7 @@ export function OnboardScreen({ agent, onBack, onSuccess }) {
           <Text style={styles.formSectionHead}>How it works</Text>
           {[
             { n: '1', t: 'Share code with doctor', s: `Tell Dr. ${doctorName.trim()} their code is ${referralCode}` },
-            { n: '2', t: 'Doctor downloads DocuRx', s: 'They search "DocuRx" on Play Store or you send them the link below' },
+            { n: '2', t: 'Doctor downloads Kavox Rx', s: 'They search "Kavox Rx" on Play Store or you send them the link below' },
             { n: '3', t: 'Doctor subscribes in app', s: 'They enter the code and complete payment (₹2,500/mo)' },
             { n: '4', t: 'Get confirmation code', s: 'Doctor gets a 4-digit code after paying — enter it below' },
           ].map((step) => (

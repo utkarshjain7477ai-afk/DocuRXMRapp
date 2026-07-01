@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "DocuRx MR",
+    "name": "Kavox MR",
     "slug": "docurx-mr",
     "version": "2.0.0",
     "runtimeVersion": "2.0.0",
@@ -36,7 +36,7 @@
       [
         "expo-av",
         {
-          "microphonePermission": "Allow DocuRx MR to access the microphone for the live demo."
+          "microphonePermission": "Allow Kavox MR to access the microphone for the live demo."
         }
       ]
     ],

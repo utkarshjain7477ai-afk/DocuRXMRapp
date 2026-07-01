@@ -45,7 +45,7 @@ export function SetupScreen({ onSetup }) {
           <View style={styles.iconWrap}>
             <Ionicons name="briefcase-outline" size={36} color="#2563EB" />
           </View>
-          <Text style={styles.title}>DocuRx MR</Text>
+          <Text style={styles.title}>Kavox MR</Text>
           <Text style={styles.sub}>Register once — your agent code is{'\n'}auto-generated. No approval needed.</Text>
         </View>
 
@@ -108,7 +108,7 @@ export function SetupScreen({ onSetup }) {
           </TouchableOpacity>
         </View>
 
-        <Text style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', marginTop: 16, fontFamily: 'Figtree_600SemiBold' }}>DocuRx MR v1.2</Text>
+        <Text style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', marginTop: 16, fontFamily: 'Figtree_600SemiBold' }}>Kavox MR v1.0</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -21,7 +21,7 @@ const SLIDES = [
     color: '#F0FDF4',
     iconColor: '#16A34A',
     title: 'AI structures the notes',
-    body: 'DocuRx automatically extracts diagnosis, medications, dosage, and next visit — formatted as a clean prescription.',
+    body: 'Kavox Rx automatically extracts diagnosis, medications, dosage, and next visit — formatted as a clean prescription.',
   },
   {
     icon: 'qr-code-outline',
@@ -35,7 +35,7 @@ const SLIDES = [
     color: '#FDF4FF',
     iconColor: '#9333EA',
     title: 'Patient app (optional)',
-    body: 'Patients can install the DocuRx Health app to track all prescriptions, set medication reminders, and share reports.',
+    body: 'Patients can install the Kavox Care app to track all prescriptions, set medication reminders, and share reports.',
   },
   {
     icon: 'shield-checkmark-outline',
@@ -48,8 +48,8 @@ const SLIDES = [
     icon: 'rocket-outline',
     color: '#EFF6FF',
     iconColor: '#2563EB',
-    title: 'Free to start',
-    body: 'DocuRx is free during early access. Doctors who sign up now lock in the founding-member rate — forever.',
+    title: 'Early access',
+    body: 'Doctors who sign up during early access lock in the founding-member rate — forever.',
   },
 ];
 
